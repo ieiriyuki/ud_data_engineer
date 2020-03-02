@@ -56,3 +56,15 @@ Do the following steps in your README.md file.
 1. Discuss the purpose of this database in the context of the startup, Sparkify, and their analytical goals.
 1. State and justify your database schema design and ETL pipeline.
 1. [Optional] Provide example queries and results for song play analysis.
+
+### メモ
+
+- みんな、songplays にヌルが多くてこんがらがっている模様
+- [これ](https://knowledge.udacity.com/questions/48698)とか、ヌルが多くてもパスはできるそう
+- song_id: SOZCTXZ12AB0182364, artist_id: AR5KOSW1187FB35FF4、が唯一のマッチらしい
+- [比較的最近の質問](https://knowledge.udacity.com/questions/70552)でもそうらしい
+- NULLが多いのは仕様らしい
+- マジか
+- insert でユニークを更新しないあるいはするように、[`on conflict`](https://www.postgresqltutorial.com/postgresql-upsert/)句を
+使う
+
