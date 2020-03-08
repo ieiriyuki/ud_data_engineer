@@ -20,7 +20,7 @@ songplays table is defined as below.
 
 |songplay_id|start_time|user_id|level|song_id|artist_id|session_id|location|user_agent|
 |-|-|-|-|-|-|-|-|-|-|
-|int, unique|timestamp|text|text|text|text|text|text|text|
+|int, primary key|timestamp, not null|text, not null|text|text|text|text|text|text|
 
 ### Dimension Tables
 
@@ -28,25 +28,25 @@ songs table is defined as below.
 
 |song_id|title|artist_id|year|duration|
 |-|-|-|-|-|
-|int, unique|text|text|int|numeric|
+|int, primary key|text|text|int|numeric|
 
 users table is defined as below.
 
 |user_id|first_name|last_name|gender|level|
 |-|-|-|-|-|
-|text, unique|text|text|text|text|
+|text, primary key|text|text|text|text|
 
 artists table is defined as below.
 
 |artist_id|name|location|latitude|longitude|
 |-|-|-|-|-|
-|text, unique|text|text|numeric|numeric|
+|text, primary key|text|text|numeric|numeric|
 
 time table is defined as below.
 
 |start_time|hour|day|week|month|year|weekday|
 |-|-|-|-|-|-|-|
-|timestamp|int|int|int|int|int|int|
+|timestamp, primary key|int|int|int|int|int|int|
 
 ### Codes
 
@@ -59,7 +59,7 @@ time table is defined as below.
 1. Run `create_table.py` and set up the database and tables.
 1. Run `etl.py` and inserts data into the tables.
 
-Some columns have unique constraint, therefore queries avoid duplicating the same ids of songs, artists, users and songplays with `on confilct (column) do nothing` option.
+Some columns have unique constraint, therefore queries avoid duplicating the same ids of songs, artists, and times with `on conflict (column) do nothing` option. The tables of songplays and users can be updated with `on conflict (column) do update set level = excluded.level`, because users may change their status of level.
 
 ## Examples of Queries
 
@@ -77,4 +77,19 @@ from songplays p
 
 user_id first_name last_name          title  name
      15       Lily      Koch Setanta matins Elena
+```
+
+Another example it to calculate the number of songplays per user in a month
+
+```sql
+select t.month, user_id, count(song_id)
+from songplays p
+    join time t on p.start_time = t.start_time
+where p.start_time between '2018-11-01 00:00:00' and '2018-11-30 23:59:59'
+group by month, user_id;
+
+month user_id count
+   11      54     0
+   11      98     0
+   11      86     0
 ```
