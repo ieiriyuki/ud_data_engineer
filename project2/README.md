@@ -28,10 +28,10 @@ The project template includes one Jupyter Notebook file, in which:
 - 結果、`shape = (6821, 11)` になる
 
 できる整形済みファイル
-```platintext
-['artist', 'firstName', 'gender', 'itemInSession', 'lastName',
-'length', 'level', 'location', 'sessionId', 'song', 'userId']
-```
+
+|artist|firstName|gender|itemInSession|lastName|length|level|location|sessionId|song|userId|
+|-|-|-|-|-|-|-|-|-|-|-|
+|0|1|2|3|4|5|6|7|8|9|10|
 
 ## Project Steps
 
@@ -50,3 +50,15 @@ Modeling your NoSQL database or Apache Cassandra database
 - Implement the logic in section Part I of the notebook template to iterate through each event file in event_data to process and create a new CSV file in Python
 - Make necessary edits to Part II of the notebook template to include Apache Cassandra CREATE and INSERT statements to load processed records into relevant tables in your data model
 - Test by running SELECT statements after running the queries on your database
+
+## Query 1
+
+Give me the artist, song title and song's length in the music app history that was heard during sessionId = 338, and itemInSession = 4
+
+```sql
+select
+    session_id, item_in_session, artist, song, length
+from sessions
+where session_id = 338
+    and item_in_session = 4;
+```
