@@ -19,7 +19,7 @@ The dimension tables can be joined to songplays table using corresponding column
 songplays table is defined as below.
 
 |songplay_id|start_time|user_id|level|song_id|artist_id|session_id|location|user_agent|
-|-|-|-|-|-|-|-|-|-|-|
+|-|-|-|-|-|-|-|-|-|
 |int, primary key|timestamp, not null|text, not null|text|text|text|text|text|text|
 
 ### Dimension Tables
