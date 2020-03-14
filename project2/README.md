@@ -51,6 +51,18 @@ Modeling your NoSQL database or Apache Cassandra database
 - Make necessary edits to Part II of the notebook template to include Apache Cassandra CREATE and INSERT statements to load processed records into relevant tables in your data model
 - Test by running SELECT statements after running the queries on your database
 
+## Keyspace
+
+```python
+try:
+    session.execute('drop keyspace if exists sparkify;')
+    create_keyspace = """create keyspace if not exists sparikify
+    with replication = {'class': 'SimpleStrategy', 'replication_factor': 3};"""
+    session.execute(create_keyspace)
+except Exception as e:
+    print(e)
+```
+
 ## Query 1
 
 Give me the artist, song title and song's length in the music app history that was heard during sessionId = 338, and itemInSession = 4
@@ -58,7 +70,30 @@ Give me the artist, song title and song's length in the music app history that w
 ```sql
 select
     session_id, item_in_session, artist, song, length
-from sessions
+from sessions_songs
 where session_id = 338
     and item_in_session = 4;
+```
+
+## Query 2
+
+Give me only the following: name of artist, song (sorted by itemInSession) and user (first and last name) for userid = 10, sessionid = 182
+
+```sql
+select
+    artist, song, first_name, last_name
+from users_sessions
+where user_id = 10
+    and session_id = 182;
+```
+
+## Query 3
+
+Give me every user name (first and last) in my music app history who listened to the song 'All Hands Against His Own'
+
+```sql
+select
+    song, first_name, last_name
+from songs_users
+where song = 'All Hands Against His Own';
 ```
