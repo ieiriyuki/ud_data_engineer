@@ -72,5 +72,35 @@ limit 10;
 ### 最初の方はPostgreSQLを使ったETLの話
 つまらん
 
+### L1 E2
+
+cudeとかdiceとかsliceとかroll upとかdrill downとか
+
+```sql
+select
+    day,
+    rating,
+    city,
+    sum(f.sales_amount) revenue
+from factsales f
+join dimdate d
+    on f.date_key = d.date_key
+join dimmovie m
+    on f.movie_key = m.movie_key
+join dimcustomer c
+    on f.customer_key = c.customer_key
+group by day, rating, city
+order by revenue desc
+limit 20;
+```
+
+```sql
+select
+    sum(sales_amount) revenue
+from factsales f
+join
+```
+
+
 
 # eof
