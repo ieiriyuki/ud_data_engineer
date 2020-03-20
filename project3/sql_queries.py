@@ -73,14 +73,18 @@ time_table_create = ("""
 ARN = config.get("IAM_ROLE", "ARN")
 LOG_PATH=config.get("S3", "LOG_JSONPATH")
 staging_events_copy = ("""copy staging_events
-from {}
-iam_role {}
+from '{}'
+iam_role '{}'
+json
+region 'us-west-2'
 """).format(LOG_PATH, ARN)
 
 SONG_DATA=config.get("S3", "SONG_DATA")
 staging_songs_copy = ("""copy staging_songs
-from {}
-iam_role {}
+from '{}'
+iam_role '{}'
+json
+region 'us-west-2'
 """).format(SONG_DATA, ARN)
 
 # FINAL TABLES
