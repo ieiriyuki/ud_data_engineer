@@ -149,12 +149,11 @@ from
 join
     staging_songs s
     on
-        s.artist_name = e.artist
-        s.title = e.song
-        s.duration = e.length
+        e.artist = s.artist_name
+        e.song = s.title
+        e.length = s.duration
 where
     e.page = "NextSong"
-    and s.num_songs is not null
     and e.ts is not null
     and e.user_id is not null
 """)
