@@ -18,21 +18,6 @@ time_table_drop = "drop table if exists time;"
 # CREATE TABLES
 
 staging_events_table_create= ("""create table if not exists staging_events (
-    num_songs       int,
-    artist_id       text,
-    latitude        numeric,
-    longitude       numeric,
-    artist_location text,
-    artist_name     text,
-    song_id         text,
-    title           text,
-    duration        numeric,
-    year            int
-)
-diststyle even;
-""")
-
-staging_songs_table_create = ("""create table if not exists staging_songs (
     artist          text,
     auth            text,
     first_name      text,
@@ -55,8 +40,23 @@ staging_songs_table_create = ("""create table if not exists staging_songs (
 diststyle even;
 """)
 
+staging_songs_table_create = ("""create table if not exists staging_songs (
+    num_songs       int,
+    artist_id       text,
+    latitude        numeric,
+    longitude       numeric,
+    artist_location text,
+    artist_name     text,
+    song_id         text,
+    title           text,
+    duration        numeric,
+    year            int
+)
+diststyle even;
+""")
+
 songplay_table_create = ("""create table if not exists songplays (
-    songplay_id int       not null identity(0, 1) distkey primary key,
+    songplay_id int       not null identity(0, 1) primary key,
     start_time  timestamp not null,
     user_id     text      not null sortkey,
     level       text,
@@ -70,7 +70,7 @@ diststyle even;
 """)
 
 user_table_create = ("""create table if not exists users (
-    user_id    text key not null distkey primary,
+    user_id    text not null distkey primary key,
     first_name text,
     last_name  text,
     gender     text,
@@ -82,7 +82,7 @@ diststyle key;
 song_table_create = ("""create table if not exists songs (
     song_id   text not null distkey primary key,
     title     text,
-    artist_id text,
+    artist_id text sortkey,
     year      int,
     duration  numeric
 )
@@ -114,6 +114,7 @@ diststyle key;
 # STAGING TABLES
 
 ARN = config.get("IAM_ROLE", "ARN")
+
 LOG_PATH=config.get("S3", "LOG_JSONPATH")
 staging_events_copy = ("""copy staging_events
 from '{}'
@@ -134,32 +135,48 @@ region 'us-west-2'
 
 songplay_table_insert = ("""insert into songplays (
     select
-        *
+        e.num_songs,
+        timestamp 'epoch' + s.ts * interval '1 second',
+        s.user_id,
+        s.level,
+        e.song_id,
+        e.artist_id,
+        s.session_id,
+        s.location,
+        s.user_agent
     from
         staging_events e
     join
         staging_songs s
         on
+            e.artist_name = s.artist
+            e.title = s.song
+            e.duration = s.length
+    where
+        s.page = "NextSong"
+        e.num_songs is not null
 )
 """)
 
 user_table_insert = ("""insert into users (
     select
-        *
+        user_id,
+        first_name,
+        last_name,
+        gender,
+        level
     from
-        staging_events e
-    join
         staging_songs s
-        on
+    where
+        user_id is not null
+        and page = "NextSong"
 )
 """)
 
 song_table_insert = ("""insert into songs (
     select
-        *
+
     from
-        staging_events e
-    join
         staging_songs s
         on
 )
