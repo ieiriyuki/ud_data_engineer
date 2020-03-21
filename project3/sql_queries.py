@@ -94,7 +94,7 @@ artist_table_create = ("""create table if not exists artists (
     artist_id text not null distkey primary key,
     name      text,
     location  text,
-    lattitude numeric,
+    latitude numeric,
     longitude numeric
 )
 diststyle key;
@@ -155,7 +155,7 @@ join
         and e.song = s.title
         and e.length = s.duration
 where
-    e.page = "NextSong"
+    e.page like 'NextSong'
     and e.ts is not null
     and e.user_id is not null
 """)
@@ -175,7 +175,7 @@ where
 """)
 
 song_table_insert = ("""insert into songs
-(song_id, title, artist_id. year, duration)
+(song_id, title, artist_id, year, duration)
 select
     song_id,
     title,
@@ -186,7 +186,6 @@ from
     staging_songs s
 where
     song_id is not null
-)
 """)
 
 artist_table_insert = ("""insert into artists
@@ -201,7 +200,6 @@ from
     staging_songs s
 where
     s.artist_id is not null
-)
 """)
 
 time_table_insert = ("""insert into time
@@ -216,7 +214,7 @@ select
     extract(dw from start_time)
 from (
     select
-        timestamp 'epoch' + e.ts * interval '1 second' start_time
+        timestamp 'epoch' + ts * interval '1 second' start_time
     from
         staging_events
     where
@@ -225,9 +223,23 @@ from (
 ;
 """)
 
+select_songplays = ("""select *
+from songplays
+where songplay_id is not null
+limit 2
+""")
+
+select_users = ("select * from users limit 2")
+
+select_songs = ("select * from songs limit 2")
+
+select_artists = ("select * from artists limit 2")
+
+select_time = ("select * from time limit 2")
 # QUERY LISTS
 
 create_table_queries = [staging_events_table_create, staging_songs_table_create, songplay_table_create, user_table_create, song_table_create, artist_table_create, time_table_create]
 drop_table_queries = [staging_events_table_drop, staging_songs_table_drop, songplay_table_drop, user_table_drop, song_table_drop, artist_table_drop, time_table_drop]
 copy_table_queries = [staging_events_copy, staging_songs_copy]
 insert_table_queries = [songplay_table_insert, user_table_insert, song_table_insert, artist_table_insert, time_table_insert]
+test_tables = [select_songplays, select_users, select_artists, select_time]
