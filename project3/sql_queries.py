@@ -13,59 +13,102 @@ songplay_table_drop = "drop table if exists songplays;"
 user_table_drop = "drop table if exists users;"
 song_table_drop = "drop table if exists songs;"
 artist_table_drop = "drop table if exists artists;"
-time_table_drop = "drop table if exists times;"
+time_table_drop = "drop table if exists time;"
 
 # CREATE TABLES
 
 staging_events_table_create= ("""create table if not exists staging_events (
-    num_songs int,
-    artist_id text,
-    latitude numeric,
-    longitude numeric,
+    num_songs       int,
+    artist_id       text,
+    latitude        numeric,
+    longitude       numeric,
     artist_location text,
-    artist_name text,
-    song_id text,
-    title text,
-    duration numeric,
-    year int
+    artist_name     text,
+    song_id         text,
+    title           text,
+    duration        numeric,
+    year            int
 )
+diststyle even;
 """)
 
 staging_songs_table_create = ("""create table if not exists staging_songs (
-    artist text,
-    auth text,
-    first_name text,
-    gender text,
+    artist          text,
+    auth            text,
+    first_name      text,
+    gender          text,
     item_in_session int,
-    last_name text,
-    length numeric,
-    level text,
-    location text,
-    method text,
-    page text,
-    registration bigint,
-    session_id int,
-    song text,
-    status int,
-    ts bigint,
-    user_agent text,
-    user_id int
+    last_name       text,
+    length          numeric,
+    level           text,
+    location        text,
+    method          text,
+    page            text,
+    registration    bigint,
+    session_id      int,
+    song            text,
+    status          int,
+    ts              bigint,
+    user_agent      text,
+    user_id         int
 )
+diststyle even;
 """)
 
-songplay_table_create = ("""
+songplay_table_create = ("""create table if not exists songplays (
+    songplay_id int       not null identity(0, 1) distkey primary key,
+    start_time  timestamp not null,
+    user_id     text      not null sortkey,
+    level       text,
+    song_id     text      sortkey,
+    artist_id   text      sortkey,
+    session_id  text,
+    location    text,
+    user_agent  text
+)
+diststyle even;
 """)
 
-user_table_create = ("""
+user_table_create = ("""create table if not exists users (
+    user_id    text key not null distkey primary,
+    first_name text,
+    last_name  text,
+    gender     text,
+    level      text
+)
+diststyle key;
 """)
 
-song_table_create = ("""
+song_table_create = ("""create table if not exists songs (
+    song_id   text not null distkey primary key,
+    title     text,
+    artist_id text,
+    year      int,
+    duration  numeric
+)
+diststyle key;
 """)
 
-artist_table_create = ("""
+artist_table_create = ("""create table if not exists artists (
+    artist_id text not null distkey primary key,
+    name      text,
+    location  text,
+    lattitude numeric,
+    longitude numeric
+)
+diststyle key;
 """)
 
-time_table_create = ("""
+time_table_create = ("""create table if not exists time (
+    start_time timestamp not null distkey sortkey primary key,
+    hour       int,
+    day        int,
+    week       int,
+    month      int,
+    year       int,
+    weekday    int
+)
+diststyle key;
 """)
 
 # STAGING TABLES
@@ -89,19 +132,59 @@ region 'us-west-2'
 
 # FINAL TABLES
 
-songplay_table_insert = ("""
+songplay_table_insert = ("""insert into songplays (
+    select
+        *
+    from
+        staging_events e
+    join
+        staging_songs s
+        on
+)
 """)
 
-user_table_insert = ("""
+user_table_insert = ("""insert into users (
+    select
+        *
+    from
+        staging_events e
+    join
+        staging_songs s
+        on
+)
 """)
 
-song_table_insert = ("""
+song_table_insert = ("""insert into songs (
+    select
+        *
+    from
+        staging_events e
+    join
+        staging_songs s
+        on
+)
 """)
 
-artist_table_insert = ("""
+artist_table_insert = ("""insert into artists (
+    select
+        *
+    from
+        staging_events e
+    join
+        staging_songs s
+        on
+)
 """)
 
-time_table_insert = ("""
+time_table_insert = ("""insert into time (
+    select
+        *
+    from
+        staging_events e
+    join
+        staging_songs s
+        on
+)
 """)
 
 # QUERY LISTS
