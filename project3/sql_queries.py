@@ -136,7 +136,7 @@ json 'auto'
 # FINAL TABLES
 
 songplay_table_insert = ("""insert into songplays
-values (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
+(start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
 select
     timestamp 'epoch' + e.ts * interval '1 second',
     e.user_id,
@@ -152,8 +152,8 @@ join
     staging_songs s
     on
         e.artist = s.artist_name
-        e.song = s.title
-        e.length = s.duration
+        and e.song = s.title
+        and e.length = s.duration
 where
     e.page = "NextSong"
     and e.ts is not null
@@ -161,7 +161,7 @@ where
 """)
 
 user_table_insert = ("""insert into users
-values (user_id, first_name, last_name, gender, level)
+(user_id, first_name, last_name, gender, level)
 select
     user_id,
     first_name,
@@ -175,7 +175,7 @@ where
 """)
 
 song_table_insert = ("""insert into songs
-values (song_id, title, artist_id. year, duration)
+(song_id, title, artist_id. year, duration)
 select
     song_id,
     title,
@@ -190,7 +190,7 @@ where
 """)
 
 artist_table_insert = ("""insert into artists
-values (artist_id, name, location, latitude, longitude)
+(artist_id, name, location, latitude, longitude)
 select
     artist_id,
     artist_name,
@@ -205,7 +205,7 @@ where
 """)
 
 time_table_insert = ("""insert into time
-values (start_time, hour, day, week, month, year, weekday)
+(start_time, hour, day, week, month, year, weekday)
 select
     start_time,
     extract(h from start_time),
