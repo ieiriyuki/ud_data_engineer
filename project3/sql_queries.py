@@ -158,22 +158,22 @@ where
     and e.user_id is not null
 """)
 
-user_table_insert = ("""insert into users (
-    select
-        user_id,
-        first_name,
-        last_name,
-        gender,
-        level
-    from
-        staging_events e
-    where
-        user_id is not null
-)
+user_table_insert = ("""insert into users
+values (user_id, first_name, last_name, gender, level)
+select
+    user_id,
+    first_name,
+    last_name,
+    gender,
+    level
+from
+    staging_events e
+where
+    user_id is not null
 """)
 
 song_table_insert = ("""insert into songs
-values ()
+values (song_id, title, artist_id. year, duration)
 select
     song_id,
     title,
@@ -205,8 +205,13 @@ where
 time_table_insert = ("""insert into time
 values (start_time, hour, day, week, month, year, weekday)
 select
-    t.start_time,
-
+    start_time,
+    extract(h from start_time),
+    extract(d from start_time),
+    extract(w from start_time),
+    extract(mon from start_time),
+    extract(y from start_time),
+    extract(dw from start_time)
 from (
     select
         timestamp 'epoch' + e.ts * interval '1 second' start_time
