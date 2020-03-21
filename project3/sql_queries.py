@@ -135,26 +135,26 @@ region 'us-west-2'
 
 songplay_table_insert = ("""insert into songplays (
     select
-        e.num_songs,
-        timestamp 'epoch' + s.ts * interval '1 second',
-        s.user_id,
-        s.level,
-        e.song_id,
-        e.artist_id,
-        s.session_id,
-        s.location,
-        s.user_agent
+        s.num_songs,
+        timestamp 'epoch' + e.ts * interval '1 second',
+        e.user_id,
+        e.level,
+        s.song_id,
+        s.artist_id,
+        e.session_id,
+        e.location,
+        e.user_agent
     from
         staging_events e
     join
         staging_songs s
         on
-            e.artist_name = s.artist
-            e.title = s.song
-            e.duration = s.length
+            s.artist_name = e.artist
+            s.title = e.song
+            s.duration = e.length
     where
-        s.page = "NextSong"
-        e.num_songs is not null
+        e.page = "NextSong"
+        s.num_songs is not null
 )
 """)
 
@@ -166,7 +166,7 @@ user_table_insert = ("""insert into users (
         gender,
         level
     from
-        staging_songs s
+        staging_events e
     where
         user_id is not null
         and page = "NextSong"
@@ -175,10 +175,15 @@ user_table_insert = ("""insert into users (
 
 song_table_insert = ("""insert into songs (
     select
-
+        song_id,
+        title,
+        artist_id,
+        year,
+        duration
     from
         staging_songs s
-        on
+    where
+        song_id is not null
 )
 """)
 
