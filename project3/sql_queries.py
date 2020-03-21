@@ -225,17 +225,17 @@ from (
 
 select_songplays = ("""select *
 from songplays
-where songplay_id is not null
-limit 2
+where user_id is not null
+limit 1
 """)
 
-select_users = ("select * from users limit 2")
+select_users = ("select * from users limit 1")
 
-select_songs = ("select * from songs limit 2")
+select_songs = ("select * from songs limit 1")
 
-select_artists = ("select * from artists limit 2")
+select_artists = ("select * from artists limit 1")
 
-select_time = ("select * from time limit 2")
+select_time = ("select * from time limit 1")
 # QUERY LISTS
 
 create_table_queries = [staging_events_table_create, staging_songs_table_create, songplay_table_create, user_table_create, song_table_create, artist_table_create, time_table_create]
