@@ -66,7 +66,6 @@ songplay_table_create = ("""create table if not exists songplays (
     location    text,
     user_agent  text
 )
-
 diststyle even;
 """)
 
@@ -134,31 +133,30 @@ region 'us-west-2'
 
 # FINAL TABLES
 
-songplay_table_insert = ("""insert into songplays (
-    select
-        default,
-        timestamp 'epoch' + e.ts * interval '1 second',
-        e.user_id,
-        e.level,
-        s.song_id,
-        s.artist_id,
-        e.session_id,
-        e.location,
-        e.user_agent
-    from
-        staging_events e
-    join
-        staging_songs s
-        on
-            s.artist_name = e.artist
-            s.title = e.song
-            s.duration = e.length
-    where
-        e.page = "NextSong"
-        and s.num_songs is not null
-        and e.ts is not null
-        and e.user_id is not null
-)
+songplay_table_insert = ("""insert into songplays
+values (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
+select
+    timestamp 'epoch' + e.ts * interval '1 second',
+    e.user_id,
+    e.level,
+    s.song_id,
+    s.artist_id,
+    e.session_id,
+    e.location,
+    e.user_agent
+from
+    staging_events e
+join
+    staging_songs s
+    on
+        s.artist_name = e.artist
+        s.title = e.song
+        s.duration = e.length
+where
+    e.page = "NextSong"
+    and s.num_songs is not null
+    and e.ts is not null
+    and e.user_id is not null
 """)
 
 user_table_insert = ("""insert into users (
