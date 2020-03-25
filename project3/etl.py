@@ -25,9 +25,9 @@ def select_tables(cur, conn):
     """select data from the created tables to check
     """
     for query in test_tables:
-        print("select data", query, sep="\n")
-        for row in cur.execute(query):
-            print(row)
+        print(query)
+        cur.execute(query)
+        print(cur.fetchall())
         conn.commit()
 
 

@@ -223,11 +223,7 @@ from (
 ;
 """)
 
-select_songplays = ("""select *
-from songplays
-where user_id is not null
-limit 1
-""")
+select_songplays = ("select * from songplays limit 1")
 
 select_users = ("select * from users limit 1")
 
