@@ -243,7 +243,7 @@ join staging_songs s
     on e.artist = s.artist_name
     and e.song = s.title
     and e.length = s.duration
-limit 4;
+limit 3;
 """)
 
 check_songplays_1 = ("select * from songplays limit 3")
@@ -273,7 +273,7 @@ join songs s
     on p.song_id = s.song_id
 join artists a
     on p.artist_id = a.artist_id
-limit 4;
+limit 3;
 """)
 
 check_users = ("""select
@@ -295,7 +295,7 @@ from artists;
 """)
 
 check_time = ("""select *
-from time limit 4""")
+from time limit 3""")
 
 # QUERY LISTS
 
