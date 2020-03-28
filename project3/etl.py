@@ -53,7 +53,6 @@ def main():
 
     load_staging_tables(cur, conn)
     insert_tables(cur, conn)
-    select_tables(cur, conn)
     check_tables(cur, conn)
 
     conn.close()
