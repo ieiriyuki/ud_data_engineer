@@ -1,6 +1,10 @@
 import configparser
+import pandas as pd
 import psycopg2
-from sql_queries import copy_table_queries, insert_table_queries, test_tables
+
+from sql_queries import (copy_table_queries,
+                         insert_table_queries,
+                         check_table_queries)
 
 
 def load_staging_tables(cur, conn):
@@ -21,14 +25,21 @@ def insert_tables(cur, conn):
         conn.commit()
 
 
-def select_tables(cur, conn):
-    """select data from the created tables to check
+def check_tables(cur, conn, n=3):
+    """check data in the tables
     """
-    for query in test_tables:
-        print(query)
-        cur.execute(query)
-        print(cur.fetchall())
-        conn.commit()
+    for query in check_table_queries:
+        try:
+            cur.execute(query)
+            data = cur.fetchall()
+            if data is None:
+                print("None")
+            else:
+                print(query, pd.DataFrame(data).head(n), sep="\n")
+            conn.commit()
+        except Exception as e:
+            conn.commit()
+            raise e
 
 
 def main():
@@ -43,6 +54,7 @@ def main():
     load_staging_tables(cur, conn)
     insert_tables(cur, conn)
     select_tables(cur, conn)
+    check_tables(cur, conn)
 
     conn.close()
 
