@@ -246,7 +246,9 @@ join staging_songs s
 limit 4;
 """)
 
-check_songplays_1 = ("""select
+check_songplays_1 = ("select * from songplays limit 3")
+
+check_songplays_2 = ("""select
     count(1),
     count(distinct songplay_id),
     count(distinct user_id),
@@ -255,7 +257,7 @@ check_songplays_1 = ("""select
 from songplays;
 """)
 
-check_songplays_2 = ("""select
+check_songplays_3 = ("""select
     distinct songplay_id,
     p.user_id,
     first_name,
@@ -305,6 +307,7 @@ check_table_qeries = [
     check_events_songs_join,
     check_songplays_1,
     check_songplays_2,
+    check_songplays_3,
     check_users,
     check_songs,
     check_artists,
