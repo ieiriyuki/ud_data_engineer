@@ -168,16 +168,27 @@ select
     last_name,
     gender,
     level
-from
-    staging_events e
+from (
+    select
+        distinct user_id,
+        first_name,
+        last_name,
+        gender,
+        level,
+        row_number() over (partition by user_id order by ts desc) rn
+    from
+        staging_events e
+    where
+        user_id is not null
+    ) t
 where
-    user_id is not null
+    rn = 1
 """)
 
 song_table_insert = ("""insert into songs
 (song_id, title, artist_id, year, duration)
 select
-    song_id,
+    distinct song_id,
     title,
     artist_id,
     year,
@@ -191,7 +202,7 @@ where
 artist_table_insert = ("""insert into artists
 (artist_id, name, location, latitude, longitude)
 select
-    artist_id,
+    distinct artist_id,
     artist_name,
     artist_location,
     latitude,
@@ -223,15 +234,64 @@ from (
 ;
 """)
 
-select_songplays = ("select * from songplays limit 1")
+check_events_songs_join = ("""select
+    e.artist, e.song, e.length, e.first_name, e.last_name
+from staging_events e
+join staging_songs s
+    on e.artist = s.artist_name
+    and e.song = s.title
+    and e.length = s.duration
+limit 10;
+""")
 
-select_users = ("select * from users limit 1")
+check_songplays_1 = ("""select
+    count(1),
+    count(distinct songplay_id),
+    count(distinct user_id),
+    count(distinct song_id),
+    count(distinct artist_id)
+from songplays;
+""")
 
-select_songs = ("select * from songs limit 1")
+check_songplays_2 = ("""select
+    songplay_id,
+    p.user_id,
+    first_name,
+    last_name,
+    p.song_id,
+    title,
+    p.artist_id,
+    name
+from songplays p
+join users u
+    on p.user_id = u.user_id
+join songs s
+    on p.song_id = s.song_id
+join artists a
+    on p.artist_id = a.artist_id
+limit 10;
+""")
 
-select_artists = ("select * from artists limit 1")
+check_users = ("""select
+    count(1),
+    count(distinct user_id)
+from users;
+""")
 
-select_time = ("select * from time limit 1")
+check_songs = ("""select
+    count(1),
+    count(distinct song_id)
+from songs;
+""")
+
+check_artists = ("""select
+    count(1),
+    count(distinct artist_id)
+from artists;
+""")
+
+check_time = ("""select *
+from time limit 4""")
 
 # QUERY LISTS
 
@@ -239,4 +299,11 @@ create_table_queries = [staging_events_table_create, staging_songs_table_create,
 drop_table_queries = [staging_events_table_drop, staging_songs_table_drop, songplay_table_drop, user_table_drop, song_table_drop, artist_table_drop, time_table_drop]
 copy_table_queries = [staging_events_copy, staging_songs_copy]
 insert_table_queries = [songplay_table_insert, user_table_insert, song_table_insert, artist_table_insert, time_table_insert]
-test_tables = [select_songplays, select_users, select_artists, select_time]
+check_table_qeries = [
+    check_events_songs_join,
+    check_songplays_1,
+    check_songplays_2,
+    check_users,
+    check_songs,
+    check_artists,
+    check_time]
