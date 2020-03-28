@@ -138,7 +138,7 @@ json 'auto'
 songplay_table_insert = ("""insert into songplays
 (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
 select
-    timestamp 'epoch' + e.ts * interval '1 second',
+    timestamp 'epoch' + e.ts / 1000 * interval '1 second',
     e.user_id,
     e.level,
     s.song_id,
@@ -234,14 +234,16 @@ from (
 ;
 """)
 
+# check the created tables
+
 check_events_songs_join = ("""select
-    e.artist, e.song, e.length, e.first_name, e.last_name
+    distinct e.artist, e.song, e.length, e.first_name, e.last_name
 from staging_events e
 join staging_songs s
     on e.artist = s.artist_name
     and e.song = s.title
     and e.length = s.duration
-limit 10;
+limit 4;
 """)
 
 check_songplays_1 = ("""select
@@ -254,7 +256,7 @@ from songplays;
 """)
 
 check_songplays_2 = ("""select
-    songplay_id,
+    distinct songplay_id,
     p.user_id,
     first_name,
     last_name,
@@ -269,7 +271,7 @@ join songs s
     on p.song_id = s.song_id
 join artists a
     on p.artist_id = a.artist_id
-limit 10;
+limit 4;
 """)
 
 check_users = ("""select
