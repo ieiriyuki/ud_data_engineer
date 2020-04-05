@@ -100,10 +100,10 @@ partition = ["year", "month"]
 cols = ["userId", "firstName", "lastName", "gender", "level"]
 window = Window.partitionBy("userId").orderBy(desc("start_time"))
 users_table = (df.filter(df.userId.isNotNull())
-               .select(cols)
-               .withColumn("rn", row_number().over(window))
-               .filter(df.rn == 1)
+               .withColumn("rn", row_number().over(window)))
+users_table = (users_table.filter(users_table.rn == 1)
                .drop("rn")
+               .select(cols)
                .withColumnRenamed("userId", "user_id")
                .withColumnRenamed("firstName", "first_name")
                .withColumnRenamed("lastName", "last_name"))
