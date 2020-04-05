@@ -11,7 +11,8 @@ from pyspark.sql.functions import (year,
                                    hour,
                                    weekofyear,
                                    date_format,
-                                   from_unixtime)
+                                   from_unixtime,
+                                   desc)
 from pyspark.sql.window import Window
 
 
@@ -63,7 +64,7 @@ def process_song_data(spark, input_data, output_data):
 
 
     # write artists table to parquet files
-    apath = output_data + "artists_table.parquet"
+    path = output_data + "artists_table.parquet"
     (artists_table.write
      .format("parquet")
      .save(path))
@@ -96,6 +97,24 @@ def process_log_data(spark, input_data, output_data):
     partition = ["year", "month"]
     (time_table.write
      .partitionBy(partition)
+     .format("parquet")
+     .save(path))
+
+    # extract columns to create users table
+    cols = ["userId", "firstName", "lastName", "gender", "level"]
+    window = Window.partitionBy("userId").orderBy(desc("start_time"))
+    users_table = (df.filter(df.userId.isNotNull())
+                   .withColumn("rn", row_number().over(window)))
+    users_table = (users_table.filter(users_table.rn == 1)
+                   .drop("rn")
+                   .select(cols)
+                   .withColumnRenamed("userId", "user_id")
+                   .withColumnRenamed("firstName", "first_name")
+                   .withColumnRenamed("lastName", "last_name"))
+
+    # write users table to parquet files
+    path = output_data + "users_table.parquet"
+    (users_table.write
      .format("parquet")
      .save(path))
 
