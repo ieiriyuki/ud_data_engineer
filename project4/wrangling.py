@@ -11,15 +11,16 @@ from pyspark.sql.functions import (year,
                                    hour,
                                    weekofyear,
                                    date_format,
-                                   from_unixtime)
+                                   from_unixtime,
+                                   desc)
 from pyspark.sql.window import Window
 
 
 config = configparser.ConfigParser()
-config.read('dl.cfg')
+config.read("dl.cfg")
 
-os.environ['AWS_ACCESS_KEY_ID'] = ''
-os.environ['AWS_SECRET_ACCESS_KEY'] = ''
+os.environ["AWS_ACCESS_KEY_ID"] = ""
+os.environ["AWS_SECRET_ACCESS_KEY"] = ""
 
 spark = SparkSession \
         .builder \
@@ -75,7 +76,6 @@ df = spark.read.json(log_data)
 # filter by actions for song plays
 df = df.filter(df.page == "NextSong")
 
-# create timestamp column from original timestamp column
 # create datetime column from original timestamp column
 df = df.withColumn("start_time", from_unixtime(df.ts / 1000.))
 
@@ -93,6 +93,24 @@ path = output_data + "time_table.parquet"
 partition = ["year", "month"]
 (time_table.write
  .partitionBy(partition)
+ .format("parquet")
+ .save(path))
+
+# extract columns to create users table
+cols = ["userId", "firstName", "lastName", "gender", "level"]
+window = Window.partitionBy("userId").orderBy(desc("start_time"))
+users_table = (df.filter(df.userId.isNotNull())
+               .select(cols)
+               .withColumn("rn", row_number().over(window))
+               .filter(df.rn == 1)
+               .drop("rn")
+               .withColumnRenamed("userId", "user_id")
+               .withColumnRenamed("firstName", "first_name")
+               .withColumnRenamed("lastName", "last_name"))
+
+# write users table to parquet files
+path = output_data + "users_table.parquet"
+(users_table.write
  .format("parquet")
  .save(path))
 
