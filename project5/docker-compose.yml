@@ -1,0 +1,40 @@
+version: "3.7"
+services: 
+    mysql:
+        image: mysql:5.7
+        container_name: mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=password
+            - MYSQL_USER=airflow
+            - MYSQL_PASSWORD=airflow
+            - MYSQL_DATABASE=airflow
+        volumes:
+            - ./mysql:/etc/mysql/conf.d
+            - airflow-vol:/var/lib/mysql
+        ports:
+            - "3306:3306"
+    airflow:
+        build: .
+        image: airflow:apache
+        container_name: airflow
+        depends_on:
+            - mysql
+        environment:
+            - AIRFLOW_HOME=/opt/airflow
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+            - MYSQL_USER=airflow
+            - MYSQL_PASSWORD=airflow
+            - MYSQL_DATABASE=airflow
+            - MYSQL_HOST=myql
+            - MYSQL_PORT=3306
+            - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+mysqldb://airflow:airflow@mysql:3306/airflow
+        ports:
+            - "8080:8080"
+        volumes:
+            - airflow-vol:/opt/airflow
+        command: webserver
+        stdin_open: true
+        tty: true
+    # airflow-worker:
+volumes:
+    airflow-vol
