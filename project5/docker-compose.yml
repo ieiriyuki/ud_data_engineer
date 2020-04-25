@@ -1,5 +1,5 @@
 version: "3.7"
-services: 
+services:
     mysql:
         image: mysql:5.7
         container_name: mysql
@@ -9,32 +9,31 @@ services:
             - MYSQL_PASSWORD=airflow
             - MYSQL_DATABASE=airflow
         volumes:
-            - ./mysql:/etc/mysql/conf.d
-            - airflow-vol:/var/lib/mysql
+            - ./my.cnf:/etc/mysql/conf.d/my.cnf:ro
         ports:
             - "3306:3306"
     airflow:
         build: .
-        image: airflow:apache
+        image: airflow
         container_name: airflow
         depends_on:
             - mysql
         environment:
             - AIRFLOW_HOME=/opt/airflow
+            - AIRFLOW__CORE__LOAD_EXAMPLES=False
             - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-            - MYSQL_USER=airflow
-            - MYSQL_PASSWORD=airflow
-            - MYSQL_DATABASE=airflow
-            - MYSQL_HOST=myql
-            - MYSQL_PORT=3306
             - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+mysqldb://airflow:airflow@mysql:3306/airflow
+            - AIRFLOW__WEBSERVER__WORKERS=2
+            - MYSQL_PORT=3306
+            - MYSQL_HOST=mysql
+        env_file:
+            - ./.env
         ports:
             - "8080:8080"
         volumes:
-            - airflow-vol:/opt/airflow
+            - ./dags:/opt/airflow/dags
+            - ./plugins:/opt/airflow/plugins
+            - ./create_tables.sql:/opt/airflow/create_tables.sql
         command: webserver
         stdin_open: true
         tty: true
-    # airflow-worker:
-volumes:
-    airflow-vol
