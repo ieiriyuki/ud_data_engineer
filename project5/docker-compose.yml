@@ -19,7 +19,7 @@ services:
         depends_on:
             - mysql
         environment:
-            - AIRFLOW_HOME=/opt/airflow
+            - AIRFLOW_HOME=/home/workspace/airflow
             - AIRFLOW__CORE__LOAD_EXAMPLES=False
             - AIRFLOW__CORE__EXECUTOR=LocalExecutor
             - AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql+mysqldb://airflow:airflow@mysql:3306/airflow
@@ -31,9 +31,9 @@ services:
         ports:
             - "8080:8080"
         volumes:
-            - ./dags:/opt/airflow/dags
-            - ./plugins:/opt/airflow/plugins
-            - ./create_tables.sql:/opt/airflow/create_tables.sql
+            - ./dags:/home/workspace/airflow/dags
+            - ./plugins:/home/workspace/airflow/plugins
+            - ./create_tables.sql:/home/workspace/airflow/create_tables.sql
         command: webserver
         stdin_open: true
         tty: true

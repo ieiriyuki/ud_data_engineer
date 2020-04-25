@@ -2,7 +2,7 @@ FROM python:3.7.7
 
 ARG AIRFLOW_VERSION="1.10.10"
 ARG AIRFLOW_EXTRAS="async,aws,azure,celery,crypto,dask,elasticsearch,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv"
-ARG AIRFLOW_HOME="/opt/airflow"
+ARG AIRFLOW_HOME="/home/workspace/airflow"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
