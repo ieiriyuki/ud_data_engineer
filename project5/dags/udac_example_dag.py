@@ -7,18 +7,17 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.postgres_operator import PostgresOperator
-from airflow.operators import (StageToRedshiftOperator,
-                               LoadFactOperator,
-                               LoadDimensionOperator,
-                               DataQualityOperator)
-
+from operators import (StageToRedshiftOperator,
+                       LoadFactOperator,
+                       LoadDimensionOperator,
+                       DataQualityOperator)
 from helpers import SqlQueries
 
 
 default_args = {
     'owner': 'udacity',
     'depends_on_past': False,
-    'start_date': datetime(2020, 1, 1),
+    'start_date': datetime(2019, 1, 12),
     'retries': 3,
     'retry_delay': timedelta(minutes=5),
     'email_on_retry': False,
@@ -44,26 +43,22 @@ create_tables = PostgresOperator(
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
     dag=dag,
-    sql=SqlQueries.copy_from_s3.format(
-        'staging_events',
-        's3://' + Variable.get('s3_bucket') + '/' + Variable.get('logdata'),
-        Variable.get('ARN'),
-        Variable.get('region'),
-        's3://' + Variable.get('s3_bucket') + '/' + Variable.get('logpath')
-    ),
+    table='staging_events',
+    data='s3://' + Variable.get('s3_bucket') + '/' + Variable.get('logdata'),
+    arn=Variable.get('arn'),
+    region=Variable.get('region'),
+    json_option='s3://' + Variable.get('s3_bucket') + '/' + Variable.get('logpath'),
     redshift_conn_id='redshift_conn_id'
 )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
     dag=dag,
-    sql=SqlQueries.copy_from_s3.format(
-        'staging_songs',
-        's3://' + Variable.get('s3_bucket') + '/' + Variable.get('songdata'),
-        Variable.get('ARN'),
-        Variable.get('region'),
-        'auto'
-    ),
+    table='staging_songs',
+    data='s3://' + Variable.get('s3_bucket') + '/' + Variable.get('songdata'),
+    arn=Variable.get('arn'),
+    region=Variable.get('region'),
+    json_option='auto',
     redshift_conn_id='redshift_conn_id'
 )
 
@@ -112,6 +107,7 @@ run_check_songplays = DataQualityOperator(
     dag=dag,
     table='songplays',
     column='playid',
+    is_null=['playid', 'start_time', 'userid'],
     redshift_conn_id='redshift_conn_id'
 )
 
@@ -120,6 +116,7 @@ run_check_user = DataQualityOperator(
     dag=dag,
     table='users',
     column='userid',
+    is_null=['userid'],
     redshift_conn_id='redshift_conn_id'
 )
 
@@ -128,6 +125,7 @@ run_check_song = DataQualityOperator(
     dag=dag,
     table='songs',
     column='songid',
+    is_null=['songid'],
     redshift_conn_id='redshift_conn_id'
 )
 
@@ -136,6 +134,7 @@ run_check_artist = DataQualityOperator(
     dag=dag,
     table='artists',
     column='artistid',
+    is_null=['artistid'],
     redshift_conn_id='redshift_conn_id'
 )
 
@@ -144,6 +143,7 @@ run_check_time = DataQualityOperator(
     dag=dag,
     table='"time"',
     column='start_time',
+    is_null=['start_time'],
     redshift_conn_id='redshift_conn_id'
 )
 

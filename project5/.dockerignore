@@ -10,3 +10,4 @@ unittest.cfg
 .env
 images
 logs
+__pycache__

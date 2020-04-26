@@ -1,13 +1,4 @@
 class SqlQueries:
-    copy_from_s3 = """
-        copy {}
-        from '{}'
-        iam_role '{}'
-        region '{}'
-        json '{}'
-        compupdate off
-    """
-
     songplays_table_insert = """
         SELECT
             md5(events.sessionid || events.start_time) songplay_id,

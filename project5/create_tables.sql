@@ -1,3 +1,5 @@
+BEGIN;
+
 DROP TABLE IF EXISTS public.staging_events;
 CREATE TABLE IF NOT EXISTS public.staging_events (
 	artist varchar(256),
@@ -83,3 +85,5 @@ CREATE TABLE IF NOT EXISTS public."time" (
 	weekday varchar(256),
 	CONSTRAINT time_pkey PRIMARY KEY (start_time)
 );
+
+COMMIT;

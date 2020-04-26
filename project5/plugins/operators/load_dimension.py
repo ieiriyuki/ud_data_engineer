@@ -33,11 +33,9 @@ class LoadDimensionOperator(BaseOperator):
             target_table=self.table,
             sql=self.sql
         )
-        if self.append_data:
-            self.log.info(f'Execute LoadDimensionOperator. append: {self.append_data}')
-            redshift_hook.run(query)
-        else:
-            self.log.info(f'Execute LoadDimensionOperator. append: {self.append_data}')
+        self.log.info(f'Execute LoadDimensionOperator. append: {self.append_data}')
+        if not self.append_data:
             del_query = LoadDimensionOperator.DELETE_TEMPLATE.format(target_table=self.table)
             redshift_hook.run(del_query)
-            redshift_hook.run(query)
+        
+        redshift_hook.run(query)
