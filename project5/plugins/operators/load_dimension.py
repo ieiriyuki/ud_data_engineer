@@ -15,10 +15,10 @@ class LoadDimensionOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 redshift_conn_id='',
-                 table='',
-                 sql='',
-                 append_data=True,
+                 redshift_conn_id,
+                 table,
+                 sql,
+                 append_data=False,
                  *args, **kwargs):
 
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)
@@ -37,5 +37,5 @@ class LoadDimensionOperator(BaseOperator):
         if not self.append_data:
             del_query = LoadDimensionOperator.DELETE_TEMPLATE.format(target_table=self.table)
             redshift_hook.run(del_query)
-        
+
         redshift_hook.run(query)

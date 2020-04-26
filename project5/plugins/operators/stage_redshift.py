@@ -17,12 +17,12 @@ class StageToRedshiftOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 redshift_conn_id='',
-                 aws_conn_id='',
-                 table='',
-                 data='',
-                 region='',
-                 json_option='',
+                 redshift_conn_id,
+                 aws_conn_id,
+                 table,
+                 data,
+                 region,
+                 json_option,
                  *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)

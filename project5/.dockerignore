@@ -1,13 +1,7 @@
 Dockerfile
 docker-compose.yml
-MEMO.md
 README.md
-airflow.cfg
 my.cnf
-create_tables.sql
-unittest.cfg
 .dockerignore
 .env
-images
-logs
 __pycache__

@@ -47,7 +47,8 @@ stage_events_to_redshift = StageToRedshiftOperator(
     data='s3://' + Variable.get('s3_bucket') + '/' + Variable.get('logdata'),
     region=Variable.get('region'),
     json_option='s3://' + Variable.get('s3_bucket') + '/' + Variable.get('logpath'),
-    redshift_conn_id='redshift_conn_id'
+    redshift_conn_id='redshift_conn_id',
+    aws_conn_id='aws_conn_id'
 )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
@@ -57,7 +58,8 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     data='s3://' + Variable.get('s3_bucket') + '/' + Variable.get('songdata'),
     region=Variable.get('region'),
     json_option='auto',
-    redshift_conn_id='redshift_conn_id'
+    redshift_conn_id='redshift_conn_id',
+    aws_conn_id='aws_conn_id'
 )
 
 load_songplays_table = LoadFactOperator(
