@@ -13,7 +13,7 @@ Pipelines consists of some processes below.
 1. **Staging operation**: Using StageToRedshiftOperator, these operations load log and song data in S3 to staging tables
 1. **Load songplays**: Insert data into the fact table of songplays from staging tables
 1. **Load dimension tables**: Insert data into the dimension tables of users, artists, songs and time
-1. **Data check**: Count the numbers of rows and distinct keys in the tables
+1. **Data Quality check**: Count the numbers of rows and distinct keys in the tables
 1. **End execution**: DummyOperator to represent the end of pipelines
 
 ## Execution of Data Pipelines
@@ -56,7 +56,6 @@ ${AIRFLOW_HOME}
 
 The DAG of Airflow requires some parameters.
 These are defined by Airflow GUI as well as environment variables.
-ARN is used for Redshift to access S3 bucket.
 
 |Key|Value|Environment Variable|
 |-|-|-|
@@ -65,7 +64,6 @@ ARN is used for Redshift to access S3 bucket.
 |logdata|log_data|AIRFLOW_VAR_LOGDATA=log_data|
 |logpath|log_json_path.json|AIRFLOW_VAR_LOGPATH=log_json_path.json|
 |songdata|song_data|AIRFLOW_VAR_SONGDATA=song_data|
-|arn|your-arn|AIRFLOW_VAR_ARN=your-arn|
 
 Connection also has to be set to access Amazon Redshift.
 This connection can be defined by GUI or environmental variable too.
@@ -74,6 +72,7 @@ An example is shown below.
 |Conn Id|Conn Type|Login|Password|Host|Port|Schema|Environment Variable|
 |-|-|-|-|-|-|-|-|
 |redshift_conn_id|postgres|awsuser|password|your-cluster-host|5439|dev|AIRFLOW_CONN_REDSHIFT_CONN_ID=postgres://awsuser:password@your-cluster-host:5439/dev|
+|aws_conn_id|aws|your-access-key|your-secret-key||||AIRFLOW_CONN_AWS_CONN_ID=aws://your-access-key:your-secret-key@|
 
 ## Data
 Raw log and song data are stored in S3 buckets below.
