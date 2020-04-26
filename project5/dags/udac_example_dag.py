@@ -1,17 +1,17 @@
 from datetime import (datetime,
                       timedelta)
-from logging import info
-import os
 
 from airflow import DAG
 from airflow.models import Variable
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.postgres_operator import PostgresOperator
+from airflow.operators.subdag_operator import SubDagOperator
+
 from operators import (StageToRedshiftOperator,
                        LoadFactOperator,
-                       LoadDimensionOperator,
-                       DataQualityOperator)
+                       LoadDimensionOperator)
 from helpers import SqlQueries
+from subdag import sub_dag
 
 
 default_args = {
@@ -24,17 +24,17 @@ default_args = {
     'catchup': False
 }
 
-dag = DAG('udac_example_dag',
+DAG_NAME = 'udac_example_dag'
+
+dag = DAG(DAG_NAME,
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
           schedule_interval='0 * * * *',
           template_searchpath='/home/workspace/airflow'
         )
 
-start_operator = DummyOperator(task_id='Begin_execution', dag=dag)
-
-create_tables = PostgresOperator(
-    task_id='Create_tables',
+start_operator = PostgresOperator(
+    task_id='Begin_execution_Create_tables',
     dag=dag,
     sql='create_tables.sql',
     postgres_conn_id='redshift_conn_id'
@@ -45,7 +45,6 @@ stage_events_to_redshift = StageToRedshiftOperator(
     dag=dag,
     table='staging_events',
     data='s3://' + Variable.get('s3_bucket') + '/' + Variable.get('logdata'),
-    arn=Variable.get('arn'),
     region=Variable.get('region'),
     json_option='s3://' + Variable.get('s3_bucket') + '/' + Variable.get('logpath'),
     redshift_conn_id='redshift_conn_id'
@@ -56,7 +55,6 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     dag=dag,
     table='staging_songs',
     data='s3://' + Variable.get('s3_bucket') + '/' + Variable.get('songdata'),
-    arn=Variable.get('arn'),
     region=Variable.get('region'),
     json_option='auto',
     redshift_conn_id='redshift_conn_id'
@@ -102,67 +100,26 @@ load_time_dimension_table = LoadDimensionOperator(
     redshift_conn_id='redshift_conn_id'
 )
 
-run_check_songplays = DataQualityOperator(
-    task_id='Run_data_check_songplays',
+run_quality_checks = SubDagOperator(
+    task_id='Run_data_quality_checks',
+    subdag=sub_dag(DAG_NAME,
+                   'Run_data_quality_checks',
+                   datetime(2019, 1, 12),
+                   '0 * * * *'),
     dag=dag,
-    table='songplays',
-    column='playid',
-    is_null=['playid', 'start_time', 'userid'],
-    redshift_conn_id='redshift_conn_id'
-)
-
-run_check_user = DataQualityOperator(
-    task_id='Run_data_check_user',
-    dag=dag,
-    table='users',
-    column='userid',
-    is_null=['userid'],
-    redshift_conn_id='redshift_conn_id'
-)
-
-run_check_song = DataQualityOperator(
-    task_id='Run_data_check_song',
-    dag=dag,
-    table='songs',
-    column='songid',
-    is_null=['songid'],
-    redshift_conn_id='redshift_conn_id'
-)
-
-run_check_artist = DataQualityOperator(
-    task_id='Run_data_check_artist',
-    dag=dag,
-    table='artists',
-    column='artistid',
-    is_null=['artistid'],
-    redshift_conn_id='redshift_conn_id'
-)
-
-run_check_time = DataQualityOperator(
-    task_id='Run_data_check_time',
-    dag=dag,
-    table='"time"',
-    column='start_time',
-    is_null=['start_time'],
-    redshift_conn_id='redshift_conn_id'
 )
 
 end_operator = DummyOperator(task_id='Stop_execution', dag=dag)
 
-start_operator              >> create_tables
-create_tables               >> [stage_events_to_redshift, stage_songs_to_redshift]
+start_operator                >> [stage_events_to_redshift, stage_songs_to_redshift]
 [stage_events_to_redshift,
- stage_songs_to_redshift]   >> load_songplays_table
-load_songplays_table        >> run_check_songplays
-run_check_songplays         >> [load_user_dimension_table,
-                                load_song_dimension_table,
-                                load_artist_dimension_table,
-                                load_time_dimension_table]
-load_user_dimension_table   >> run_check_user
-load_song_dimension_table   >> run_check_song
-load_artist_dimension_table >> run_check_artist
-load_time_dimension_table   >> run_check_time
-[run_check_user,
- run_check_song,
- run_check_artist,
- run_check_time]            >> end_operator
+ stage_songs_to_redshift]     >> load_songplays_table
+load_songplays_table          >> [load_user_dimension_table,
+                                  load_song_dimension_table,
+                                  load_artist_dimension_table,
+                                  load_time_dimension_table]
+[load_user_dimension_table,
+ load_song_dimension_table,
+ load_artist_dimension_table,
+ load_time_dimension_table]   >> run_quality_checks
+run_quality_checks            >> end_operator
