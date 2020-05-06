@@ -25,7 +25,7 @@ Here data model is assumed as below.
 There are three services, the online store, the exchange market, and the weather report.
 Each service produces their raw data, and these raw data have to be processed for datamart as describe here.
 
-<img src="images/datamodel.png" width="640">
+<img src="./images/datamodel.png" width="640">
 
 Star schema is adopted here, because just three kinds of data exist and joining them is not so intensive.
 A simple model should be more useful than sophisticated ones in this situation.
@@ -55,7 +55,7 @@ All the data are sorts of timeseries data, so they can be combined with their da
 
 # ETL Tools and Processes
 
-Raw data are stored in Amazon S3 and Amazon Redshift is used for Data Warehouse.
+Raw data are stored in Amazon S3 and Data Warehouse is Amazon Redshift.
 This is because both are scalable for the increase of data size, and they are integrated to each other well.
 This make it easy to load data into Data Warehouse from storage and to analyize data seemlessly.
 
@@ -73,18 +73,28 @@ Here, scripts for ETL are introduced.
 
 ### Directory of Source Codes
 
+The source codes for this project has the structure of directory as below.
+Main ETL scripts are in `src` directory.
+`README.md` and `images` directory is for this documentation.
+GitHub repository is [here](https://github.com/ieiriyuki/ud_data_engineer).
+
 ```bash
 capstone
   ├src
   |  ├etl.py
   |  └queries.py
   ├images
-  |  └image.png
+  |  └datamodel.png
   ├params.cfg
   └README.md
 ```
 
 ### S3 Bucket structure
+
+This section shows the structure of S3 Bucket used in this project.
+Most objects are directly under the bucket except weather data.
+Weather data is seperated into three files for size limitation of Redshift and located in `weather` directory.
+In addition, jsonpath file, `weather_json_path.json`, is used to parse weather data.
 
 ```bash
 bucket
@@ -99,24 +109,38 @@ bucket
 
 # Future Work
 
-- The data was increased by 100x.
-- The pipelines would be run on a daily basis by 7 am every day.
-- The database needed to be accessed by 100+ people.
+In this document, my data model for online retail store is described.
+As the store grows, data will be accumulated and many analysts will access the database.
+Here, some plans are explained to adjust such situations.
 
-# Rubrics
+## Case 1: Increase of data size
+At this moment, all data are past historical data between January 2009 and December 2011, and the size it not so huge.
+Therefore, the processes here is like an one-time batch process.
+If data become 100 times larger than it is now, possible approaches are
 
-## Data Model
+- Seperate data based on the sales date and load them daily
+- Use [Amazon DynamoDB](https://aws.amazon.com/dynamodb/), which is fast NoSQL databse for intensive read and write, and load data immediately upon an arrival so that ETL processes can deal with small amount of data
 
-- The ETL processes result in the data model outlined in the write-up.
-- A data dictionary for the final data model is included.
-- The data model is appropriate for the identified purpose.
+## Case 2: Daily processing of data
+The current ETL processes are designed to execute one-time batch processing.
+If I have to run processing daily such as every 7 am, available solutions are
 
-## Suggestions
+- Use cloud computing services like [AWS Lambda](https://aws.amazon.com/lambda/), [AWS Batch](https://aws.amazon.com/batch/), and [AWS Data Pipeline](https://aws.amazon.com/datapipeline/).
+  - These services support scheduled execution of data processing, and computing resources are managed by Amazon Web Services. Therefore, focuses are on developing data processing rather than platform construction.
+- If it is necessary for data engineer to conrtol of job scheduling in detail, [Apache Airflow](https://airflow.apache.org/) mey be a good option. There, job scheduling and task dependency can be programed at high level.
 
-To make your project stand out:
+An example of daily processing is like below.
 
-- Work with large amounts of data.
-- Combine datasets that are difficult to combine.
-- Enrich the data from several disparate sources.
-- Include recommendations for how to use to data to come up with insights.
-- Write a blog post about your project and link to it.
+<img src="./images/workflow.png" width="640">
+
+## Case 3: Intensive access by many users
+At present, it is assumed that only limited people use this database for analyses.
+However, it should be planned what can be taken so that many users can access to the database.
+
+- One can modify some [configurations](https://aws.amazon.com/redshift/pricing/) of Redshift cluster, such as
+  - A suitable node type is chosen depending on requirements of storage and cpu usages
+  - The more nodes give the better performance
+  - [Concurrency scaling](https://docs.aws.amazon.com/redshift/latest/dg/concurrency-scaling.html) enables many concurrent access and queries
+- Apart from Redshift, [Amazon DynamoDB](https://aws.amazon.com/dynamodb/]) could be an option if a particular type of query is frequently executed.
+  - DynamoDB is a managed NoSQL database like Apache Cassandra.
+  - Design tables in DynamoDB so that a particular query can get its immediate result.
