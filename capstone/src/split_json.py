@@ -4,6 +4,9 @@ import json
 
 
 def main():
+    """Split original weather data in London into three parts
+    """
+
     with open("../data/London_weather.json", "r") as fin:
         data = json.load(fin)
 
